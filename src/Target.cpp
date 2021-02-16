@@ -7,9 +7,9 @@
 
 Target::Target()
 {
-	TextureManager::Instance()->load("../Assets/textures/Circle.png","circle");
+	TextureManager::Instance()->load("../Assets/textures/earth.png","earth");
 
-	const auto size = TextureManager::Instance()->getTextureSize("circle");
+	const auto size = TextureManager::Instance()->getTextureSize("earth");
 	setWidth(size.x);
 	setHeight(size.y);
 	getTransform()->position = glm::vec2(100.0f, 100.0f);
@@ -31,7 +31,7 @@ void Target::draw()
 	const auto y = getTransform()->position.y;
 
 	// draw the target
-	TextureManager::Instance()->draw("circle", x, y, 0, 255, true);
+	TextureManager::Instance()->draw("earth", x, y, 0, 255, true);
 }
 
 void Target::update()
