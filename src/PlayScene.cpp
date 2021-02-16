@@ -32,8 +32,7 @@ void PlayScene::draw()
 
 void PlayScene::update()
 {
-	Totaldistance = Util::distance(m_pTarget->getGridPosition(), m_pSpaceShip->getGridPosition());
-	TotalCost(Totaldistance);
+	TotalCost();
 	updateDisplayList();
 }
 
@@ -113,12 +112,11 @@ void PlayScene::start()
 	addChild(instructionsLabel2);
 	instructionsLabel2->setEnabled(false);
 
-	Totaldistance = Util::distance(m_pTarget->getGridPosition(), m_pSpaceShip->getGridPosition());
 	totalPathCostLabel = new Label("--", "Consolas", 20, white, glm::vec2(400.0f, 525.0f));
 	totalPathCostLabel->setParent(this);
 	addChild(totalPathCostLabel);
 	totalPathCostLabel->setEnabled(false);
-	TotalCost(Totaldistance);
+	TotalCost();
 
 }
 
@@ -299,18 +297,19 @@ void PlayScene::m_computeTileCosts()
 {
 	for (auto tile : m_pGrid)
 	{
-		auto distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
+		//auto distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
+		auto distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
 		tile->setTileCost(distance);
 	}
 
 }
 
-void PlayScene::TotalCost(const float cost)
+void PlayScene::TotalCost()
 {
-
+	auto m_cost = abs(m_pSpaceShip->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(m_pSpaceShip->getGridPosition().y - m_pTarget->getGridPosition().y);
 	std::stringstream stream;
 
-	stream << std::fixed << std::setprecision(1) <<"Total Cost: "<< cost;
+	stream << std::fixed << std::setprecision(1) <<"Total Cost: "<< m_cost;
 	const std::string cost_string = stream.str();
 	totalPathCostLabel->setText(cost_string);
 }
