@@ -30,6 +30,7 @@ private:
 	glm::vec2 m_mousePosition;
 
 	Target* m_pTarget;
+	SpaceShip* m_pSpaceShip;
 
 	// Pathfinding functions and objects
 	void m_buildGrid();

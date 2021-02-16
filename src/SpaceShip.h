@@ -29,6 +29,8 @@ public:
 	void setTurnRate(float rate);
 	float getAccelerationRate() const;
 	void setAccelerationRate(float rate);
+	glm::vec2 getGridPosition()const;
+	void setGridPosition(float col, float row);
 	
 private:
 
@@ -39,7 +41,7 @@ private:
 	float m_maxSpeed;
 	float m_turnRate;
 	float m_accelerationRate;
-
+	glm::vec2 m_gridPosition;
 	// private function
 	void m_Move();
 };

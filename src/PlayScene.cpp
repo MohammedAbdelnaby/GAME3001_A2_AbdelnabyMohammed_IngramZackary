@@ -70,6 +70,14 @@ void PlayScene::start()
 	m_pTarget->setGridPosition(15, 11);
 	addChild(m_pTarget);
 
+
+	m_pSpaceShip = new SpaceShip();
+	m_pSpaceShip->getTransform()->position = m_getTile(1, 1)->getTransform()->position + offSet;
+	m_pSpaceShip->setGridPosition(1, 1);
+	addChild(m_pSpaceShip);
+	m_pSpaceShip->setDestination(m_pTarget->getTransform()->position);
+
+	
 	m_computeTileCosts();
 	
 }
@@ -110,6 +118,23 @@ void PlayScene::GUI_Function()
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
 	}
 	
+	
+	ImGui::Separator();
+
+	static int spaceShipPosition[] = { m_pSpaceShip->getGridPosition().x, m_pSpaceShip->getGridPosition().y };
+	if (ImGui::SliderInt2("Spaceship position", spaceShipPosition, 0, Config::COL_NUM - 1))
+	{
+		if (spaceShipPosition[1] > Config::ROW_NUM - 1)
+		{
+			spaceShipPosition[1] = Config::ROW_NUM - 1;
+		}
+		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_pSpaceShip->getTransform()->position = m_getTile(spaceShipPosition[0], spaceShipPosition[1])->getTransform()->position + offSet;
+		m_pSpaceShip->setGridPosition(spaceShipPosition[0], spaceShipPosition[1]);
+		m_computeTileCosts();
+		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
+		SDL_RenderPresent(Renderer::Instance()->getRenderer());
+	}
 	ImGui::Separator();
 	
 	if(ImGui::Button("Start"))
