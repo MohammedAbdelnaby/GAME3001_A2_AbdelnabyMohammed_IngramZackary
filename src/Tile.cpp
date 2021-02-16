@@ -55,8 +55,9 @@ void Tile::setTileCost(const float cost)
 
 void Tile::addLabel()
 {
+	const SDL_Color white = {0, 255, 255 ,255};
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
-	m_costLabel = new Label("99.9", "Consolas", 12);
+	m_costLabel = new Label("99.9", "Consolas", 12, white);
 	m_costLabel->getTransform()->position = getTransform()->position + offSet + glm::vec2(0.0f, -6.0f);
 	getParent()->addChild(m_costLabel);
 	m_costLabel->setEnabled(false);

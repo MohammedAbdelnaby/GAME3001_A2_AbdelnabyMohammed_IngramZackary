@@ -1,7 +1,8 @@
 #include "PlayScene.h"
 #include "Game.h"
 #include "EventManager.h"
-
+#include <sstream>
+#include <iomanip>
 // required for IMGUI
 #include "imgui.h"
 #include "imgui_sdl.h"
@@ -18,6 +19,7 @@ PlayScene::~PlayScene()
 
 void PlayScene::draw()
 {
+	TextureManager::Instance()->draw("spacebg", 400, 300, 0, 255, true);
 	drawDisplayList();
 	
 	if(EventManager::Instance().isIMGUIActive())
@@ -30,6 +32,8 @@ void PlayScene::draw()
 
 void PlayScene::update()
 {
+	Totaldistance = Util::distance(m_pTarget->getGridPosition(), m_pSpaceShip->getGridPosition());
+	TotalCost(Totaldistance);
 	updateDisplayList();
 }
 
@@ -41,7 +45,13 @@ void PlayScene::clean()
 void PlayScene::handleEvents()
 {
 	EventManager::Instance().update();
-
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_GRAVE))
+	{
+		totalPathCostLabel->setEnabled(true);
+		ImGuiLabel->setEnabled(false);
+		instructionsLabel->setEnabled(true);
+		instructionsLabel2->setEnabled(true);
+	}
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_ESCAPE))
 	{
 		TheGame::Instance()->quit();
@@ -60,9 +70,10 @@ void PlayScene::handleEvents()
 
 void PlayScene::start()
 {
+
 	// Set GUI Title
 	m_guiTitle = "Play Scene";
-
+	TextureManager::Instance()->load("../Assets/textures/spacebg.png", "spacebg");
 	m_buildGrid();
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
 	m_pTarget = new Target();
@@ -77,9 +88,38 @@ void PlayScene::start()
 	addChild(m_pSpaceShip);
 	m_pSpaceShip->setDestination(m_pTarget->getTransform()->position);
 
-	
+
 	m_computeTileCosts();
 	
+
+
+
+	SoundManager::Instance().load("../Assets/audio/David Bowie.mp3", "David Bowie", SOUND_MUSIC);
+	SoundManager::Instance().setMusicVolume(30);
+	SoundManager::Instance().playMusic("David Bowie", -1);
+	const SDL_Color green = { 0, 255, 0, 255 };
+	const SDL_Color white = { 255, 255, 255, 255 };
+	ImGuiLabel = new Label("Press ' ` ' for debug menu", "Consolas", 40, green, glm::vec2(400.0f, 300.0f));
+	ImGuiLabel->setParent(this);
+	addChild(ImGuiLabel);
+
+	instructionsLabel = new Label("START - will start the A* pathfinding algorithm ", "Consolas", 20, white, glm::vec2(400.0f, 550.0f));
+	instructionsLabel->setParent(this);
+	addChild(instructionsLabel);
+	instructionsLabel->setEnabled(false);
+
+	instructionsLabel2 = new Label("RESTART - will restart the ship at (1,1) and the target at (15,11)", "Consolas", 20, white, glm::vec2(400.0f, 575.0f));
+	instructionsLabel2->setParent(this);
+	addChild(instructionsLabel2);
+	instructionsLabel2->setEnabled(false);
+
+	Totaldistance = Util::distance(m_pTarget->getGridPosition(), m_pSpaceShip->getGridPosition());
+	totalPathCostLabel = new Label("--", "Consolas", 20, white, glm::vec2(400.0f, 525.0f));
+	totalPathCostLabel->setParent(this);
+	addChild(totalPathCostLabel);
+	totalPathCostLabel->setEnabled(false);
+	TotalCost(Totaldistance);
+
 }
 
 void PlayScene::GUI_Function() 
@@ -90,7 +130,7 @@ void PlayScene::GUI_Function()
 	// See examples by uncommenting the following - also look at imgui_demo.cpp in the IMGUI filter
 	//ImGui::ShowDemoWindow();
 	
-	ImGui::Begin("GAME3001 - Lab 3", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove);
+	ImGui::Begin("GAME3001 - Lab 3", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
 	static bool isGridEnabled = false;
 	if(ImGui::Checkbox("Grid Enabled", &isGridEnabled))
@@ -139,14 +179,28 @@ void PlayScene::GUI_Function()
 	
 	if(ImGui::Button("Start"))
 	{
-		
+		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
+		SoundManager::Instance().setSoundVolume(50);
+		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
 	}
 
 	ImGui::SameLine();
 	
 	if (ImGui::Button("Reset"))
 	{
+		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_pTarget->getTransform()->position = m_getTile(15, 11)->getTransform()->position + offSet;
+		m_pTarget->setGridPosition(15, 11);
 		
+		
+		m_pSpaceShip->getTransform()->position = m_getTile(1,1)->getTransform()->position + offSet;
+		m_pSpaceShip->setGridPosition(1, 1);
+		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
+		SDL_RenderPresent(Renderer::Instance()->getRenderer());
+
+		SoundManager::Instance().load("../Assets/audio/teleport.wav", "teleport", SOUND_SFX);
+		SoundManager::Instance().setSoundVolume(25);
+		SoundManager::Instance().playSound("teleport", 0, 0);
 	}
 
 	ImGui::Separator();
@@ -248,6 +302,17 @@ void PlayScene::m_computeTileCosts()
 		auto distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
 		tile->setTileCost(distance);
 	}
+
+}
+
+void PlayScene::TotalCost(const float cost)
+{
+
+	std::stringstream stream;
+
+	stream << std::fixed << std::setprecision(1) <<"Total Cost: "<< cost;
+	const std::string cost_string = stream.str();
+	totalPathCostLabel->setText(cost_string);
 }
 
 Tile* PlayScene::m_getTile(int col, int row)

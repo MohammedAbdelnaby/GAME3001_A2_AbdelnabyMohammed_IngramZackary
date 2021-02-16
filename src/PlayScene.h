@@ -31,12 +31,20 @@ private:
 
 	Target* m_pTarget;
 	SpaceShip* m_pSpaceShip;
+	float Totaldistance;
+	Label* ImGuiLabel;
+	Label* instructionsLabel;
+	Label* instructionsLabel2;
+	Label* totalPathCostLabel;
+
 
 	// Pathfinding functions and objects
 	void m_buildGrid();
 	void m_setGridEnabled(bool state);
 	std::vector<Tile*> m_pGrid;
 	void m_computeTileCosts();
+	void TotalCost(const float cost);
+	
 
 
 	Tile* m_getTile(int col, int row);

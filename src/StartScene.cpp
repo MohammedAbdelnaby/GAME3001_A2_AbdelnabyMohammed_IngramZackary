@@ -64,6 +64,9 @@ void StartScene::start()
 	{
 		m_pStartButton->setActive(false);
 		TheGame::Instance()->changeSceneState(PLAY_SCENE);
+		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
+		SoundManager::Instance().setSoundVolume(50);
+		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
 	});
 	
 	m_pStartButton->addEventListener(MOUSE_OVER, [&]()->void
