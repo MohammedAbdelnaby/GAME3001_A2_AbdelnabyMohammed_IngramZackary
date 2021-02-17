@@ -43,7 +43,7 @@ private:
 	void m_setGridEnabled(bool state);
 	std::vector<Tile*> m_pGrid;
 	void m_computeTileCosts();
-	void TotalCost(const float cost);
+	void TotalCost();
 	
 
 
