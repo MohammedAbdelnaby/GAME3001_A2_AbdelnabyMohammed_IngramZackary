@@ -1,10 +1,12 @@
 #pragma once
 #ifndef __TILE__
 #define __TILE__
-#include "DisplayObject.h"
+#include "NavigationObject.h"
 #include "NeighbourTile.h"
 #include "Label.h"
-class Tile : public DisplayObject
+#include "TileStatus.h"
+
+class Tile : public NavigationObject
 {
 public:
 	// Constructor
@@ -23,14 +25,20 @@ public:
 	void setTileCost(float cost);
 	void addLabel();
 	void setLabelsEnabled(bool state);
-	glm::vec2 getGridPosition()const;
-	void setGridPosition(float col, float row);
+	/*glm::vec2 getGridPosition()const;
+	void setGridPosition(float col, float row);*/
+
+	TileStatus getTileStatus() const;
+	void setTileStatus(TileStatus status);
+
 private:
+	TileStatus m_status;
+	
 	Label* m_costLabel;
 	Label* m_statusLabel;
 	float m_cost;
 	Tile* m_neighbours[NUM_OF_NEIGHBOUR_TILES];
-	glm::vec2 m_gridPosition;
+	//glm::vec2 m_gridPosition;
 };
 
 #endif /* defined (__TILE__) */

@@ -65,6 +65,7 @@ void PlayScene::handleEvents()
 	{
 		TheGame::Instance()->changeSceneState(END_SCENE);
 	}
+
 }
 
 void PlayScene::start()
@@ -73,17 +74,23 @@ void PlayScene::start()
 	// Set GUI Title
 	m_guiTitle = "Play Scene";
 	TextureManager::Instance()->load("../Assets/textures/spacebg.png", "spacebg");
+
 	m_buildGrid();
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	currentHeuristic = MANHATTAN;
+
+	//Target
 	m_pTarget = new Target();
 	m_pTarget->getTransform()->position = m_getTile(15,11)->getTransform()->position+offSet;
 	m_pTarget->setGridPosition(15, 11);
+	m_getTile(15, 11)->setTileStatus(GOAL);
 	addChild(m_pTarget);
-
-
+	
+	//SpaceShip
 	m_pSpaceShip = new SpaceShip();
 	m_pSpaceShip->getTransform()->position = m_getTile(1, 1)->getTransform()->position + offSet;
 	m_pSpaceShip->setGridPosition(1, 1);
+	m_getTile(1, 1)->setTileStatus(START);
 	addChild(m_pSpaceShip);
 	m_pSpaceShip->setDestination(m_pTarget->getTransform()->position);
 
@@ -128,7 +135,7 @@ void PlayScene::GUI_Function()
 	// See examples by uncommenting the following - also look at imgui_demo.cpp in the IMGUI filter
 	//ImGui::ShowDemoWindow();
 	
-	ImGui::Begin("GAME3001 - Lab 3", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
+	ImGui::Begin("GAME3001 - A2", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
 	static bool isGridEnabled = false;
 	if(ImGui::Checkbox("Grid Enabled", &isGridEnabled))
@@ -138,8 +145,37 @@ void PlayScene::GUI_Function()
 
 	}
 
+
 	ImGui::Separator();
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+
+	//auto radio = static_cast<int>(currentHeuristic);
+	//ImGui::LabelText("", "Heuristic Type");
+	//ImGui::RadioButton("Manhattan", &radio, static_cast<int>(MANHATTAN));
+	//ImGui::SameLine();
+	//ImGui::RadioButton("Euclidean", &radio, static_cast<int>(EUCLIDEAN));
+	//if (currentHeuristic != Heuristic(radio))
+	//{
+	//	currentHeuristic = Heuristic(radio);
+	//	m_computeTileCosts();
+	//}
+
+	ImGui::Separator();
+
+	//static int startPosition[] = { m_pSpaceShip->getGridPosition().x, m_pSpaceShip->getGridPosition().y };
+	//if (ImGui::SliderInt2("Start position", startPosition, 0, Config::COL_NUM - 1))
+	//{
+	//	if (startPosition[1] > Config::ROW_NUM - 1)
+	//	{
+	//		startPosition[1] = Config::ROW_NUM - 1;
+	//	}
+	//	SDL_RenderClear(Renderer::Instance()->getRenderer());
+	//	m_pSpaceShip->getTransform()->position = m_getTile(startPosition[0], startPosition[1])->getTransform()->position + offSet;
+	//	m_pSpaceShip->setGridPosition(startPosition[0], startPosition[1]);
+	//
+	//	SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
+	//	SDL_RenderPresent(Renderer::Instance()->getRenderer());
+	//}
 
 	static int targetPosition[] = { m_pTarget->getGridPosition().x, m_pTarget->getGridPosition().y };
 	if (ImGui::SliderInt2("Target position", targetPosition, 0, Config::COL_NUM - 1))
@@ -149,8 +185,10 @@ void PlayScene::GUI_Function()
 			targetPosition[1] = Config::ROW_NUM - 1;
 		}
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_getTile(m_pTarget->getGridPosition())->setTileStatus(UNVISITED);
 		m_pTarget->getTransform()->position = m_getTile(targetPosition[0], targetPosition[1])->getTransform()->position +offSet;
 		m_pTarget->setGridPosition(targetPosition[0], targetPosition[1]);
+		m_getTile(m_pTarget->getGridPosition())->setTileStatus(GOAL);
 		m_computeTileCosts();
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
@@ -159,6 +197,7 @@ void PlayScene::GUI_Function()
 	
 	ImGui::Separator();
 
+	//Start position/Spaceship position
 	static int spaceShipPosition[] = { m_pSpaceShip->getGridPosition().x, m_pSpaceShip->getGridPosition().y };
 	if (ImGui::SliderInt2("Spaceship position", spaceShipPosition, 0, Config::COL_NUM - 1))
 	{
@@ -167,9 +206,11 @@ void PlayScene::GUI_Function()
 			spaceShipPosition[1] = Config::ROW_NUM - 1;
 		}
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_getTile(m_pSpaceShip->getGridPosition())->setTileStatus(UNVISITED);
 		m_pSpaceShip->getTransform()->position = m_getTile(spaceShipPosition[0], spaceShipPosition[1])->getTransform()->position + offSet;
 		m_pSpaceShip->setGridPosition(spaceShipPosition[0], spaceShipPosition[1]);
-		m_computeTileCosts();
+		m_getTile(m_pSpaceShip->getGridPosition())->setTileStatus(START);
+		//m_computeTileCosts();
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
 	}
@@ -180,6 +221,7 @@ void PlayScene::GUI_Function()
 		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
 		SoundManager::Instance().setSoundVolume(50);
 		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
+		m_findShortestPath();
 	}
 
 	ImGui::SameLine();
@@ -295,10 +337,24 @@ void PlayScene::m_setGridEnabled(bool state)
 
 void PlayScene::m_computeTileCosts()
 {
+	float distance;
+
 	for (auto tile : m_pGrid)
 	{
-		//auto distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
-		auto distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
+		//switch (currentHeuristic)
+		//{
+		//case MANHATTAN:
+		//	//Manhattan distance
+		//	distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
+		//	break;
+		//case EUCLIDEAN:
+		//	//Euclidean distance
+		//	distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
+		//	break;
+		//}
+
+		distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
+
 		tile->setTileCost(distance);
 	}
 
@@ -314,7 +370,91 @@ void PlayScene::TotalCost()
 	totalPathCostLabel->setText(cost_string);
 }
 
+void PlayScene::m_findShortestPath()
+{
+	//Add start position to the open list
+	auto startTile = m_getTile(m_pSpaceShip->getGridPosition());
+	startTile->setTileStatus(OPEN);
+	m_pOpenList.push_back(startTile);
+
+	bool goalFound = false;
+
+	//Loop until the open list is empty or the goal is found
+	while (!m_pOpenList.empty() && !goalFound)
+	{
+		auto min = INFINITY;
+		Tile* minTile;
+		int minTileIndex = 0;
+		int count = 0;
+
+		std::vector<Tile*> neighbourList;
+		for (int index = 0; index < NUM_OF_NEIGHBOUR_TILES; index++)
+		{
+			neighbourList.push_back(m_pOpenList[0]->getNeighbourTile(NeighbourTile(index)));
+		}
+
+		for (auto neighbour : neighbourList)
+		{
+			if (neighbour->getTileStatus() != GOAL)
+			{
+				if (neighbour->getTileCost() < min)
+				{
+					min = neighbour->getTileCost();
+					minTile = neighbour;
+					minTileIndex = count;
+				}
+				count++;
+			}
+			else
+			{
+				minTile = neighbour;
+				m_pPathList.push_back(minTile);
+				goalFound = true;
+				break;
+			}
+		}
+
+		//remove the reference of the current tile in the open list
+		m_pPathList.push_back(m_pOpenList[0]);
+		m_pOpenList.pop_back(); //empties the list
+
+		//add minTile to the open list
+		m_pOpenList.push_back(minTile);
+		neighbourList.erase(neighbourList.begin() + minTileIndex);
+
+		//push all remaing neighbours onto the closed list
+		for (auto neighbour : neighbourList)
+		{
+			if (neighbour->getTileStatus() == UNVISITED)
+			{
+				neighbour->setTileStatus(CLOSED);
+				m_pClosedList.push_back(neighbour);
+			}
+		}
+	}
+
+	m_displayPathList();
+
+}
+
+void PlayScene::m_displayPathList()
+{
+	for (auto node : m_pPathList)
+	{
+		std::cout << "(" << node->getGridPosition().x << "," << node->getGridPosition().y << ")" << std::endl;
+	}
+	std::cout << "Path Length: " << m_pPathList.size() << std::endl;
+
+}
+
 Tile* PlayScene::m_getTile(int col, int row)
 {
+	return m_pGrid[(row * Config::COL_NUM) + col];
+}
+
+Tile* PlayScene::m_getTile(const glm::vec2 grid_position)
+{
+	const auto col = grid_position.x;
+	const auto row = grid_position.y;
 	return m_pGrid[(row * Config::COL_NUM) + col];
 }

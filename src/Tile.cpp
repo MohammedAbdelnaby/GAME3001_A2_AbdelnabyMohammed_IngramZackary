@@ -75,12 +75,45 @@ void Tile::setLabelsEnabled(const bool state)
 	m_statusLabel->setEnabled(state);
 }
 
-glm::vec2 Tile::getGridPosition() const
+TileStatus Tile::getTileStatus() const
 {
-	return m_gridPosition;
+	return m_status;
 }
 
-void Tile::setGridPosition(const float col, const float row)
+void Tile::setTileStatus(const TileStatus status)
 {
-	m_gridPosition = glm::vec2(col, row);
+	m_status = status;
+
+	switch (status)
+	{
+	case UNVISITED:
+		m_statusLabel->setText("--");
+		break;
+	case OPEN:
+		m_statusLabel->setText("O");
+		break;
+	case CLOSED:
+		m_statusLabel->setText("C");
+		break;
+	case IMPASSIBLE:
+		m_statusLabel->setText("I");
+		break;
+	case GOAL:
+		m_statusLabel->setText("G");
+		break;
+	case START:
+		m_statusLabel->setText("S");
+		break;
+
+	}
 }
+
+//glm::vec2 Tile::getGridPosition() const
+//{
+//	return m_gridPosition;
+//}
+//
+//void Tile::setGridPosition(const float col, const float row)
+//{
+//	m_gridPosition = glm::vec2(col, row);
+//}

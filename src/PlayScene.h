@@ -9,6 +9,7 @@
 #include "SpaceShip.h"
 #include "Target.h"
 #include "Tile.h"
+#include "Heuristic.h"
 
 class PlayScene : public Scene
 {
@@ -45,9 +46,19 @@ private:
 	void m_computeTileCosts();
 	void TotalCost();
 	
-
+	void m_findShortestPath();
+	void m_displayPathList();
 
 	Tile* m_getTile(int col, int row);
+	Tile* m_getTile(glm::vec2 grid_position);
+
+	//Heuristic
+	Heuristic currentHeuristic;
+
+	//open, closed, and path lists
+	std::vector<Tile*> m_pOpenList;
+	std::vector<Tile*> m_pClosedList;
+	std::vector<Tile*> m_pPathList;
 	
 };
 
