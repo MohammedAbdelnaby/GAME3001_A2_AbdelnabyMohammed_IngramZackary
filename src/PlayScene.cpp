@@ -129,6 +129,7 @@ void PlayScene::start()
 
 void PlayScene::GUI_Function() 
 {
+	
 	// Always open with a NewFrame
 	ImGui::NewFrame();
 
@@ -221,13 +222,18 @@ void PlayScene::GUI_Function()
 		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
 		SoundManager::Instance().setSoundVolume(50);
 		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
-		m_findShortestPath();
+		
+
+
+			m_findShortestPath();
+
 	}
 
 	ImGui::SameLine();
 	
 	if (ImGui::Button("Reset"))
 	{
+		
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
 		m_pTarget->getTransform()->position = m_getTile(15, 11)->getTransform()->position + offSet;
 		m_pTarget->setGridPosition(15, 11);
@@ -237,6 +243,13 @@ void PlayScene::GUI_Function()
 		m_pSpaceShip->setGridPosition(1, 1);
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
+
+		for (auto node : m_pGrid)
+		{
+			node->setTileStatus(UNVISITED);
+		}
+
+		
 
 		SoundManager::Instance().load("../Assets/audio/teleport.wav", "teleport", SOUND_SFX);
 		SoundManager::Instance().setSoundVolume(25);
@@ -372,6 +385,13 @@ void PlayScene::TotalCost()
 
 void PlayScene::m_findShortestPath()
 {
+
+	m_pClosedList.clear();
+	m_pClosedList.shrink_to_fit();
+	m_pOpenList.clear();
+	m_pOpenList.shrink_to_fit();
+	m_pPathList.clear();
+	m_pPathList.shrink_to_fit();
 	//Add start position to the open list
 	auto startTile = m_getTile(m_pSpaceShip->getGridPosition());
 	startTile->setTileStatus(OPEN);
@@ -395,6 +415,7 @@ void PlayScene::m_findShortestPath()
 
 		for (auto neighbour : neighbourList)
 		{
+			std::cout << "TEST " << std::endl;
 			if (neighbour->getTileStatus() != GOAL)
 			{
 				if (neighbour->getTileCost() < min)
@@ -420,6 +441,7 @@ void PlayScene::m_findShortestPath()
 
 		//add minTile to the open list
 		m_pOpenList.push_back(minTile);
+		minTile->setTileStatus(OPEN);
 		neighbourList.erase(neighbourList.begin() + minTileIndex);
 
 		//push all remaing neighbours onto the closed list
@@ -432,9 +454,7 @@ void PlayScene::m_findShortestPath()
 			}
 		}
 	}
-
 	m_displayPathList();
-
 }
 
 void PlayScene::m_displayPathList()

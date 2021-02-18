@@ -29,7 +29,7 @@ public:
 	void setGridPosition(float col, float row);*/
 
 	TileStatus getTileStatus() const;
-	void setTileStatus(TileStatus status);
+	void setTileStatus(const TileStatus status);
 
 private:
 	TileStatus m_status;
