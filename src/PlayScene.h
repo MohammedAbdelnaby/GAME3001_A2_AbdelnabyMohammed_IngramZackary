@@ -55,7 +55,7 @@ private:
 	
 	Tile* m_getTile(int col, int row);
 	Tile* m_getTile(glm::vec2 grid_position);
-	asteroid* m_pAsteroids[10];
+	asteroid* m_pAsteroids[8];
 	//Heuristic
 	Heuristic currentHeuristic;
 

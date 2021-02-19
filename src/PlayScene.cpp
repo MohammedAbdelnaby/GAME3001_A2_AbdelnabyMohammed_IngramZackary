@@ -417,17 +417,6 @@ void PlayScene::m_computeTileCosts()
 
 	for (auto tile : m_pGrid)
 	{
-		//switch (currentHeuristic)
-		//{
-		//case MANHATTAN:
-		//	//Manhattan distance
-		//	distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
-		//	break;
-		//case EUCLIDEAN:
-		//	//Euclidean distance
-		//	distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
-		//	break;
-		//}
 
 		distance = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
 
@@ -448,7 +437,6 @@ void PlayScene::TotalCost()
 
 void PlayScene::m_findShortestPath()
 {
-
 	m_pClosedList.clear();
 	m_pClosedList.shrink_to_fit();
 	m_pOpenList.clear();
@@ -478,29 +466,28 @@ void PlayScene::m_findShortestPath()
 
 		for (auto neighbour : neighbourList)
 		{
-			std::cout << "TEST " << std::endl;
-			if (neighbour->getTileStatus() != GOAL)
-			{
-				if (neighbour->getTileStatus() != IMPASSIBLE)
+				std::cout << "TEST " << std::endl;
+				if (neighbour->getTileStatus() != GOAL)
 				{
-					if (neighbour->getTileCost() < min)
+					if (neighbour->getTileStatus() != IMPASSIBLE)
 					{
-						min = neighbour->getTileCost();
-						minTile = neighbour;
-						minTileIndex = count;
+						if (neighbour->getTileCost() < min)
+						{
+							min = neighbour->getTileCost();
+							minTile = neighbour;
+							minTileIndex = count;
+						}
+						count++;
 					}
-					count++;
 				}
-			}
-			else
-			{
-				minTile = neighbour;
-				m_pPathList.push_back(minTile);
-				goalFound = true;
-				break;
-			}
+				else
+				{
+					minTile = neighbour;
+					m_pPathList.push_back(minTile);
+					goalFound = true;
+					break;
+				}
 		}
-
 		//remove the reference of the current tile in the open list
 		m_pPathList.push_back(m_pOpenList[0]);
 		m_pOpenList.pop_back(); //empties the list
@@ -540,7 +527,6 @@ void PlayScene::m_moveShip()
 	for (int i = 0; i < m_pPathList.size(); i++)
 	{
 		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[i]->getGridPosition().x, m_pPathList[i]->getGridPosition().y)->getTransform()->position + offSet;
-		SDL_Delay(10);
 	}
 }
 
@@ -552,7 +538,6 @@ void PlayScene::m_debugView()
 	m_setGridEnabled(true);//Tile borders
 	m_computeTileCosts();//Tile cost
 	m_findShortestPath();//path information ?
-	
 }
 
 Tile* PlayScene::m_getTile(int col, int row)
