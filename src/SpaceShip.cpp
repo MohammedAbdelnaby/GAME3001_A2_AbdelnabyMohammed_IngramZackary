@@ -105,7 +105,7 @@ float SpaceShip::getRotation() const
 
 void SpaceShip::m_Move()
 {
-
+	
 }
 
 glm::vec2 SpaceShip::getGridPosition() const

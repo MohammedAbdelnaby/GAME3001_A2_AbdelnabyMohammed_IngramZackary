@@ -48,6 +48,9 @@ private:
 	
 	void m_findShortestPath();
 	void m_displayPathList();
+	//void m_moveShip();
+
+	void m_debugView();
 
 	Tile* m_getTile(int col, int row);
 	Tile* m_getTile(glm::vec2 grid_position);

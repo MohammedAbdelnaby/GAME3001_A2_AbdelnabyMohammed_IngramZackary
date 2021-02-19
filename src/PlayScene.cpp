@@ -65,7 +65,18 @@ void PlayScene::handleEvents()
 	{
 		TheGame::Instance()->changeSceneState(END_SCENE);
 	}
-
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_H)) //Debug View
+	{
+		m_debugView();
+		
+	}
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_F))//Finding and Display the Shortest Path
+	{
+		m_setGridEnabled(true);//Tile borders
+		m_computeTileCosts();//Tile cost
+		m_findShortestPath();//path information ?
+	}
+	
 }
 
 void PlayScene::start()
@@ -465,6 +476,23 @@ void PlayScene::m_displayPathList()
 	}
 	std::cout << "Path Length: " << m_pPathList.size() << std::endl;
 
+}
+
+//void PlayScene::m_moveShip()
+//{
+//	for (int i = 0; i < m_pPathlist.size())
+//	{
+//
+//	}
+//}
+
+
+void PlayScene::m_debugView()
+{
+	m_setGridEnabled(true);//Tile borders
+	m_computeTileCosts();//Tile cost
+	m_findShortestPath();//path information ?
+	
 }
 
 Tile* PlayScene::m_getTile(int col, int row)
