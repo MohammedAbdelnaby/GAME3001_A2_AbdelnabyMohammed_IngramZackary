@@ -32,6 +32,7 @@ void PlayScene::draw()
 
 void PlayScene::update()
 {
+
 	TotalCost();
 	updateDisplayList();
 }
@@ -107,7 +108,55 @@ void PlayScene::start()
 
 
 	m_computeTileCosts();
-	
+
+		m_pAsteroids[0] = new asteroid();
+		m_pAsteroids[0]->getTransform()->position = m_getTile(2, 0)->getTransform()->position + offSet;
+		m_pAsteroids[0]->setGridPosition(2, 0);
+		m_getTile(2, 0)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[0]);
+
+		m_pAsteroids[1] = new asteroid();
+		m_pAsteroids[1]->getTransform()->position = m_getTile(2, 1)->getTransform()->position + offSet;
+		m_pAsteroids[1]->setGridPosition(2, 1);
+		m_getTile(2, 1)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[1]);
+
+		m_pAsteroids[2] = new asteroid();
+		m_pAsteroids[2]->getTransform()->position = m_getTile(2, 2)->getTransform()->position + offSet;
+		m_pAsteroids[2]->setGridPosition(2, 2);
+		m_getTile(2, 2)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[2]);
+
+		m_pAsteroids[3] = new asteroid();
+		m_pAsteroids[3]->getTransform()->position = m_getTile(10, 3)->getTransform()->position + offSet;
+		m_pAsteroids[3]->setGridPosition(10, 3);
+		m_getTile(10, 3)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[3]);
+
+		m_pAsteroids[4] = new asteroid();
+		m_pAsteroids[4]->getTransform()->position = m_getTile(10, 4)->getTransform()->position + offSet;
+		m_pAsteroids[4]->setGridPosition(10, 4);
+		m_getTile(10, 4)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[4]);
+
+		m_pAsteroids[5] = new asteroid();
+		m_pAsteroids[5]->getTransform()->position = m_getTile(10, 5)->getTransform()->position + offSet;
+		m_pAsteroids[5]->setGridPosition(10, 5);
+		m_getTile(10, 5)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[5]);
+
+		m_pAsteroids[6] = new asteroid();
+		m_pAsteroids[6]->getTransform()->position = m_getTile(10, 6)->getTransform()->position + offSet;
+		m_pAsteroids[6]->setGridPosition(10, 6);
+		m_getTile(10, 6)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[6]);
+
+		m_pAsteroids[7] = new asteroid();
+		m_pAsteroids[7]->getTransform()->position = m_getTile(10, 7)->getTransform()->position + offSet;
+		m_pAsteroids[7]->setGridPosition(10, 7);
+		m_getTile(10, 7)->setTileStatus(IMPASSIBLE);
+		addChild(m_pAsteroids[7]);
+
 
 
 
@@ -237,7 +286,7 @@ void PlayScene::GUI_Function()
 
 
 			m_findShortestPath();
-
+			m_moveShip();
 	}
 
 	ImGui::SameLine();
@@ -248,14 +297,17 @@ void PlayScene::GUI_Function()
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
 		m_pTarget->getTransform()->position = m_getTile(15, 11)->getTransform()->position + offSet;
 		m_pTarget->setGridPosition(15, 11);
-		
+		targetPosition[0] = 15;
+		targetPosition[1] = 11;
+
 		
 		m_pSpaceShip->getTransform()->position = m_getTile(1,1)->getTransform()->position + offSet;
 		m_pSpaceShip->setGridPosition(1, 1);
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
-
-		for (auto node : m_pGrid)
+		spaceShipPosition[0] = 1;
+		spaceShipPosition[1] = 1;
+ 		for (auto node : m_pGrid)
 		{
 			node->setTileStatus(UNVISITED);
 		}
@@ -429,13 +481,16 @@ void PlayScene::m_findShortestPath()
 			std::cout << "TEST " << std::endl;
 			if (neighbour->getTileStatus() != GOAL)
 			{
-				if (neighbour->getTileCost() < min)
+				if (neighbour->getTileStatus() != IMPASSIBLE)
 				{
-					min = neighbour->getTileCost();
-					minTile = neighbour;
-					minTileIndex = count;
+					if (neighbour->getTileCost() < min)
+					{
+						min = neighbour->getTileCost();
+						minTile = neighbour;
+						minTileIndex = count;
+					}
+					count++;
 				}
-				count++;
 			}
 			else
 			{
@@ -470,6 +525,7 @@ void PlayScene::m_findShortestPath()
 
 void PlayScene::m_displayPathList()
 {
+
 	for (auto node : m_pPathList)
 	{
 		std::cout << "(" << node->getGridPosition().x << "," << node->getGridPosition().y << ")" << std::endl;
@@ -478,13 +534,17 @@ void PlayScene::m_displayPathList()
 
 }
 
-//void PlayScene::m_moveShip()
-//{
-//	for (int i = 0; i < m_pPathlist.size())
-//	{
-//
-//	}
-//}
+void PlayScene::m_moveShip()
+{
+	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	for (int i = 0; i < m_pPathList.size(); i++)
+	{
+		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[i]->getGridPosition().x, m_pPathList[i]->getGridPosition().y)->getTransform()->position + offSet;
+		SDL_Delay(10);
+	}
+}
+
+
 
 
 void PlayScene::m_debugView()

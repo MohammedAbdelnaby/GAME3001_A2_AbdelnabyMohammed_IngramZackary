@@ -10,6 +10,7 @@
 #include "Target.h"
 #include "Tile.h"
 #include "Heuristic.h"
+#include "Asteroid.h"
 
 class PlayScene : public Scene
 {
@@ -48,13 +49,13 @@ private:
 	
 	void m_findShortestPath();
 	void m_displayPathList();
-	//void m_moveShip();
+	void m_moveShip();
 
 	void m_debugView();
-
+	
 	Tile* m_getTile(int col, int row);
 	Tile* m_getTile(glm::vec2 grid_position);
-
+	asteroid* m_pAsteroids[10];
 	//Heuristic
 	Heuristic currentHeuristic;
 
