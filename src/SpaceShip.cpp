@@ -105,7 +105,38 @@ float SpaceShip::getRotation() const
 
 void SpaceShip::m_Move()
 {
-	
+	auto deltaTime = TheGame::Instance()->getDeltaTime();
+
+	//Direction with magnitude
+	m_targetDirection = m_destination - getTransform()->position;
+
+	//normalized direction
+	m_targetDirection = Util::normalize(m_targetDirection);
+
+	auto targetRotation = Util::signedAngle(getOrientation(), m_targetDirection);
+
+	auto turnSensitivity = 5.0f;
+
+	/*if (abs(targetRotation > 0.0f))
+	{
+		if (targetRotation > 0.0f)
+		{
+			setRotation(getRotation() + getTurnRate());
+		}
+		else if (targetRotation < 0.0f)
+		{
+			setRotation(getRotation() - getTurnRate());
+		}
+	}
+
+	getRigidBody()->acceleration = getOrientation() * getAccelerationRate();
+
+	getRigidBody()->velocity += getOrientation() * (deltaTime)+0.05f * getRigidBody()->acceleration * (deltaTime);
+
+	getRigidBody()->velocity = Util::clamp(getRigidBody()->velocity, m_maxSpeed);
+
+	getTransform()->position += getRigidBody()->velocity;*/
+
 }
 
 glm::vec2 SpaceShip::getGridPosition() const

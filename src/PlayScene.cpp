@@ -35,6 +35,8 @@ void PlayScene::update()
 
 	TotalCost();
 	updateDisplayList();
+
+	
 }
 
 void PlayScene::clean()
