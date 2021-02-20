@@ -117,25 +117,26 @@ void SpaceShip::m_Move()
 
 	auto turnSensitivity = 5.0f;
 
-	/*if (abs(targetRotation > 0.0f))
-	{
-		if (targetRotation > 0.0f)
-		{
-			setRotation(getRotation() + getTurnRate());
-		}
-		else if (targetRotation < 0.0f)
-		{
-			setRotation(getRotation() - getTurnRate());
-		}
-	}
+	//if (abs(targetRotation > 0.0f))
+	//{
+	//	if (targetRotation > 0.0f)
+	//	{
+	//		setRotation(getRotation() + getTurnRate());
+	//	}
+	//	else if (targetRotation < 0.0f)
+	//	{
+	//		setRotation(getRotation() - getTurnRate());
+	//	}
+	//}
 
-	getRigidBody()->acceleration = getOrientation() * getAccelerationRate();
+	//getRigidBody()->acceleration = getOrientation() * getAccelerationRate();
 
-	getRigidBody()->velocity += getOrientation() * (deltaTime)+0.05f * getRigidBody()->acceleration * (deltaTime);
+	//getRigidBody()->velocity += getOrientation() * (deltaTime)+0.05f * getRigidBody()->acceleration * (deltaTime);
 
-	getRigidBody()->velocity = Util::clamp(getRigidBody()->velocity, m_maxSpeed);
+	//getRigidBody()->velocity = Util::clamp(getRigidBody()->velocity, m_maxSpeed);
 
-	getTransform()->position += getRigidBody()->velocity;*/
+	//getTransform()->position += getRigidBody()->velocity;
+	
 
 }
 

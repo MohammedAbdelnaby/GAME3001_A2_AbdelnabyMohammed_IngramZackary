@@ -25,6 +25,9 @@ public:
 	virtual void handleEvents() override;
 	virtual void start() override;
 
+	
+
+
 private:
 	// IMGUI Function
 	void GUI_Function();
@@ -64,6 +67,11 @@ private:
 	std::vector<Tile*> m_pClosedList;
 	std::vector<Tile*> m_pPathList;
 	bool test = true;
+
+	
+	/*int moveCounter = 0;
+	bool m_shipIsMoving = false;*/
+
 };
 
 #endif /* defined (__PLAY_SCENE__) */

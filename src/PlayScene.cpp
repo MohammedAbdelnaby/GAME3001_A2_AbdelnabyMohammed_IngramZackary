@@ -79,6 +79,7 @@ void PlayScene::handleEvents()
 		m_computeTileCosts();//Tile cost
 		m_findShortestPath();//path information ?
 	}
+
 	
 }
 
@@ -187,6 +188,9 @@ void PlayScene::start()
 	totalPathCostLabel->setEnabled(false);
 	TotalCost();
 
+	
+
+
 }
 
 void PlayScene::GUI_Function() 
@@ -289,6 +293,7 @@ void PlayScene::GUI_Function()
 
 			m_findShortestPath();
 			m_moveShip();
+			
 	}
 
 	ImGui::SameLine();
@@ -530,6 +535,26 @@ void PlayScene::m_moveShip()
 	{
 		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[i]->getGridPosition().x, m_pPathList[i]->getGridPosition().y)->getTransform()->position + offSet;
 	}
+
+
+
+	//auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	//	if (moveCounter < m_pPathList.size())
+	//	{
+
+	//		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[moveCounter]->getGridPosition())->getTransform()->position + offset;
+	//		m_pSpaceShip->setGridPosition(m_pPathList[moveCounter]->getGridPosition().x, m_pPathList[moveCounter]->getGridPosition().y);
+	//		if (Game::Instance()->getFrames() % 20 == 0)
+	//		{
+	//			moveCounter++;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		m_shipIsMoving = false;
+	//	}
+	
+
 }
 
 
@@ -540,6 +565,13 @@ void PlayScene::m_debugView()
 	m_setGridEnabled(true);//Tile borders
 	m_computeTileCosts();//Tile cost
 	m_findShortestPath();//path information ?
+
+	//Not working atm, but it should set the start tile with a right click
+	if (EventManager::Instance().getMouseButton(3))
+	{
+		m_pSpaceShip->SetLoc({ (float)EventManager::Instance().getMousePosition().x, (float)EventManager::Instance().getMousePosition().y });
+	}
+
 }
 
 Tile* PlayScene::m_getTile(int col, int row)

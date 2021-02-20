@@ -258,7 +258,7 @@ void EventManager::m_IMGUI_Keymap()
     m_io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
 }
 
-bool EventManager::getMouseButton(const int button_number) const
+bool  EventManager::getMouseButton(const int button_number) const
 {
     return m_mouseButtons[button_number];
 }

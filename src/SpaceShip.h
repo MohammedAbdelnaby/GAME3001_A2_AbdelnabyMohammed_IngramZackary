@@ -18,6 +18,8 @@ public:
 	void update() override;
 	void clean() override;
 
+	
+
 	// getters and setters
 	void setDestination(glm::vec2 destination);
 	void setMaxSpeed(float speed);
@@ -32,6 +34,9 @@ public:
 	glm::vec2 getGridPosition()const;
 	void setGridPosition(float col, float row);
 	
+	//Debug view set start tile
+	void SetLoc(const SDL_FPoint& p) { m_destination.x = p.x; m_destination.y = p.y; }
+
 private:
 
 	glm::vec2 m_destination;
@@ -44,6 +49,8 @@ private:
 	glm::vec2 m_gridPosition;
 	// private function
 	void m_Move();
+
+	
 };
 
 #endif /* defined (__SPACE_SHIP__) */
