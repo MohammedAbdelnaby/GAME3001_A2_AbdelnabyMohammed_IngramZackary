@@ -108,12 +108,3 @@ void Tile::setTileStatus(const TileStatus status)
 	}
 }
 
-//glm::vec2 Tile::getGridPosition() const
-//{
-//	return m_gridPosition;
-//}
-//
-//void Tile::setGridPosition(const float col, const float row)
-//{
-//	m_gridPosition = glm::vec2(col, row);
-//}

@@ -7,7 +7,6 @@ asteroid::asteroid()
 	auto size = TextureManager::Instance()->getTextureSize("asteroid");
 	setWidth(size.x);
 	setHeight(size.y);
-
 	getTransform()->position = glm::vec2(300.0f, 300.0f);
 }
 

@@ -25,8 +25,6 @@ public:
 	void setTileCost(float cost);
 	void addLabel();
 	void setLabelsEnabled(bool state);
-	/*glm::vec2 getGridPosition()const;
-	void setGridPosition(float col, float row);*/
 
 	TileStatus getTileStatus() const;
 	void setTileStatus(const TileStatus status);

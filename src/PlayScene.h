@@ -11,6 +11,7 @@
 #include "Tile.h"
 #include "Heuristic.h"
 #include "Asteroid.h"
+#include "Pathway.h"
 
 class PlayScene : public Scene
 {
@@ -57,7 +58,7 @@ private:
 	void m_displayPathList();
 	void m_setInstructionsEnabled(bool enabled);
 	bool m_getInstructionsEnabled();
-
+	void m_createPathway();
 
 	bool m_GridEnabled;
 	Tile* m_getTile(int col, int row);
@@ -75,6 +76,7 @@ private:
 	void m_moveShip();
 	int moveCounter = 0;
 	bool m_shipIsMoving = false;
+	std::vector<Pathway*> m_pPathway;
 
 };
 

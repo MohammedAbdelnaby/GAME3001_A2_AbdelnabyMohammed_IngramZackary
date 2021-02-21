@@ -141,6 +141,9 @@
     <ClCompile Include="..\src\Asteroid.cpp">
       <Filter>Game Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Pathway.cpp">
+      <Filter>Game Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\StartScene.h">
@@ -297,6 +300,9 @@
       <Filter>Enums</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Asteroid.h">
+      <Filter>Game Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Pathway.h">
       <Filter>Game Objects</Filter>
     </ClInclude>
   </ItemGroup>

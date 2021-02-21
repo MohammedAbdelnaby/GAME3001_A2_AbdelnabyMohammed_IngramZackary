@@ -55,13 +55,7 @@ void PlayScene::handleEvents()
 	EventManager::Instance().update();
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_GRAVE))
 	{
-		totalPathCostLabel->setEnabled(m_getInstructionsEnabled());
 		ImGuiLabel->setEnabled(false);
-		instructionsLabel->setEnabled(m_getInstructionsEnabled());
-		instructionsLabel2->setEnabled(m_getInstructionsEnabled());
-		instructionsLabel3->setEnabled(m_getInstructionsEnabled());
-		instructionsLabel4->setEnabled(m_getInstructionsEnabled());
-		instructionsLabel5->setEnabled(m_getInstructionsEnabled());
 	}
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_ESCAPE))
 	{
@@ -219,7 +213,14 @@ void PlayScene::start()
 	addChild(instructionsLabel5);
 	instructionsLabel5->setEnabled(false);
 
+	SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
+	SoundManager::Instance().setSoundVolume(50);
 
+	SoundManager::Instance().load("../Assets/audio/teleport.wav", "teleport", SOUND_SFX);
+	SoundManager::Instance().setSoundVolume(25);
+
+	SoundManager::Instance().load("../Assets/audio/pop.ogg", "pop", SOUND_SFX);
+	SoundManager::Instance().setSoundVolume(100);
 }
 
 void PlayScene::GUI_Function() 
@@ -291,10 +292,9 @@ void PlayScene::GUI_Function()
 	
 	if(ImGui::Button("Start"))
 	{
-		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
-		SoundManager::Instance().setSoundVolume(50);
 		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
 		m_findShortestPath();
+		m_createPathway();
 	}
 
 	ImGui::SameLine();
@@ -329,8 +329,12 @@ void PlayScene::GUI_Function()
 		std::cout << m_pPathList.empty() << std::endl;
 		//m_shipIsMoving = false;
 
-		SoundManager::Instance().load("../Assets/audio/teleport.wav", "teleport", SOUND_SFX);
-		SoundManager::Instance().setSoundVolume(25);
+		for (int i = 0; i < m_pPathway.size(); i++)
+		{
+			removeChild(m_pPathway[i]);
+		}
+		m_pPathway.clear();
+		m_pPathway.shrink_to_fit();
 		SoundManager::Instance().playSound("teleport", 0, 0);
 	}
 
@@ -465,7 +469,6 @@ void PlayScene::m_findShortestPath()
 		auto startTile = m_getTile(m_pSpaceShip->getGridPosition());
 		startTile->setTileStatus(OPEN);
 		m_pOpenList.push_back(startTile);
-
 		bool goalFound = false;
 
 		//Loop until the open list is empty or the goal is found
@@ -482,19 +485,23 @@ void PlayScene::m_findShortestPath()
 			}
 			for (auto neighbour : neighbourList)
 			{
-				//std::cout << "TEST " << std::endl;
 				if (neighbour->getTileStatus() != GOAL)
 				{
-					if (neighbour->getTileStatus() != IMPASSIBLE)
+					if (neighbour->getTileStatus() == IMPASSIBLE)
 					{
-					if (neighbour->getTileCost() < min)
-					{
-						min = neighbour->getTileCost();
-						minTile = neighbour;
-						minTileIndex = count;
+						continue;
 					}
-					count++;
-					}
+						if (neighbour->getTileCost() < min)
+						{
+							min = neighbour->getTileCost();
+							minTile = neighbour;
+							minTileIndex = count;
+							if (minTile->getTileStatus() == IMPASSIBLE)
+							{
+								std::cout << "LOL"<< std::endl;
+							}
+						}
+						count++;
 				}
 				else
 				{
@@ -504,11 +511,11 @@ void PlayScene::m_findShortestPath()
 					goalFound = true;
 					break;
 				}
+				
 			}
 			//remove the reference of the current tile in the open list
 			m_pPathList.push_back(m_pOpenList[0]);
 			m_pOpenList.pop_back(); //empties the list
-
 			//add minTile to the open list
 			m_pOpenList.push_back(minTile);
 			minTile->setTileStatus(OPEN);
@@ -517,7 +524,7 @@ void PlayScene::m_findShortestPath()
 			//push all remaing neighbours onto the closed list
 			for (auto neighbour : neighbourList)
 			{
-				if (neighbour->getTileStatus() == UNVISITED)
+				if (neighbour->getTileStatus() == UNVISITED || neighbour->getTileStatus() != IMPASSIBLE)
 				{
 					neighbour->setTileStatus(CLOSED);
 					m_pClosedList.push_back(neighbour);
@@ -549,6 +556,20 @@ bool PlayScene::m_getInstructionsEnabled()
 	return InstructionsEnabled;
 }
 
+void PlayScene::m_createPathway()
+{
+	auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	if (!m_pPathList.empty())
+	{
+		for (int i = 0; i < m_pPathList.size(); i++)
+		{
+			m_pPathway.push_back(new Pathway());
+			m_pPathway[i]->getTransform()->position = m_getTile(m_pPathList[i]->getGridPosition().x, m_pPathList[i]->getGridPosition().y)->getTransform()->position + offset;
+			addChild(m_pPathway[i]);
+		}
+	}
+}
+
 void PlayScene::m_moveShip()
 {
 	auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
@@ -564,6 +585,7 @@ void PlayScene::m_moveShip()
 	}
 	else
 	{
+		SoundManager::Instance().playSound("pop", 0, 0);
 		m_shipIsMoving = false;
 	}
 }
