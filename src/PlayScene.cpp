@@ -496,10 +496,6 @@ void PlayScene::m_findShortestPath()
 							min = neighbour->getTileCost();
 							minTile = neighbour;
 							minTileIndex = count;
-							if (minTile->getTileStatus() == IMPASSIBLE)
-							{
-								std::cout << "LOL"<< std::endl;
-							}
 						}
 						count++;
 				}
