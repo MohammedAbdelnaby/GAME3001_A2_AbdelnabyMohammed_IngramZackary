@@ -32,10 +32,16 @@ void PlayScene::draw()
 
 void PlayScene::update()
 {
-
+	totalPathCostLabel->setEnabled(m_getInstructionsEnabled());
+	instructionsLabel->setEnabled(m_getInstructionsEnabled());
+	instructionsLabel2->setEnabled(m_getInstructionsEnabled());
+	instructionsLabel3->setEnabled(m_getInstructionsEnabled());
+	instructionsLabel4->setEnabled(m_getInstructionsEnabled());
+	instructionsLabel5->setEnabled(m_getInstructionsEnabled());
 	TotalCost();
 	updateDisplayList();
-
+	if(m_shipIsMoving)
+		m_moveShip();
 	
 }
 
@@ -49,10 +55,13 @@ void PlayScene::handleEvents()
 	EventManager::Instance().update();
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_GRAVE))
 	{
-		totalPathCostLabel->setEnabled(true);
+		totalPathCostLabel->setEnabled(m_getInstructionsEnabled());
 		ImGuiLabel->setEnabled(false);
-		instructionsLabel->setEnabled(true);
-		instructionsLabel2->setEnabled(true);
+		instructionsLabel->setEnabled(m_getInstructionsEnabled());
+		instructionsLabel2->setEnabled(m_getInstructionsEnabled());
+		instructionsLabel3->setEnabled(m_getInstructionsEnabled());
+		instructionsLabel4->setEnabled(m_getInstructionsEnabled());
+		instructionsLabel5->setEnabled(m_getInstructionsEnabled());
 	}
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_ESCAPE))
 	{
@@ -68,18 +77,25 @@ void PlayScene::handleEvents()
 	{
 		TheGame::Instance()->changeSceneState(END_SCENE);
 	}
-	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_H)) //Debug View
+	cooldown--;
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_F)) //Debug View
 	{
-		m_debugView();
-		
-	}
-	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_F))//Finding and Display the Shortest Path
-	{
-		m_setGridEnabled(true);//Tile borders
-		m_computeTileCosts();//Tile cost
-		m_findShortestPath();//path information ?
-	}
 
+		m_findShortestPath();
+
+
+	}
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_G))//Finding and Display the Shortest Path
+	{
+		if (cooldown <= -20)
+		{
+			m_setGridEnabled(!m_getGridEnabled());//Tile borders
+		}
+	}
+	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_M))//Finding and Display the Shortest Path
+	{
+		m_shipIsMoving = true;
+	}
 	
 }
 
@@ -92,7 +108,6 @@ void PlayScene::start()
 
 	m_buildGrid();
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
-	currentHeuristic = MANHATTAN;
 
 	//Target
 	m_pTarget = new Target();
@@ -106,8 +121,9 @@ void PlayScene::start()
 	m_pSpaceShip->getTransform()->position = m_getTile(1, 1)->getTransform()->position + offSet;
 	m_pSpaceShip->setGridPosition(1, 1);
 	m_getTile(1, 1)->setTileStatus(START);
-	addChild(m_pSpaceShip);
 	m_pSpaceShip->setDestination(m_pTarget->getTransform()->position);
+	addChild(m_pSpaceShip);
+	
 
 
 	m_computeTileCosts();
@@ -182,25 +198,35 @@ void PlayScene::start()
 	addChild(instructionsLabel2);
 	instructionsLabel2->setEnabled(false);
 
-	totalPathCostLabel = new Label("--", "Consolas", 20, white, glm::vec2(400.0f, 525.0f));
+	totalPathCostLabel = new Label("--", "Consolas", 20, white, glm::vec2(400.0f, 450.0f));
 	totalPathCostLabel->setParent(this);
 	addChild(totalPathCostLabel);
 	totalPathCostLabel->setEnabled(false);
 	TotalCost();
 
-	
+	instructionsLabel3 = new Label("' F ' will show the shortest path", "Consolas", 20, white, glm::vec2(400.0f, 500.0f));
+	instructionsLabel3->setParent(this);
+	addChild(instructionsLabel3);
+	instructionsLabel3->setEnabled(false);
+
+	instructionsLabel4 = new Label("' M ' will make the ship follow the shortest path", "Consolas", 20, white, glm::vec2(400.0f, 525.0f));
+	instructionsLabel4->setParent(this);
+	addChild(instructionsLabel4);
+	instructionsLabel4->setEnabled(false);
+
+	instructionsLabel5 = new Label("' G ' will turn off/on the grid", "Consolas", 20, white, glm::vec2(400.0f, 475.0f));
+	instructionsLabel5->setParent(this);
+	addChild(instructionsLabel5);
+	instructionsLabel5->setEnabled(false);
 
 
 }
 
 void PlayScene::GUI_Function() 
 {
-	
 	// Always open with a NewFrame
 	ImGui::NewFrame();
 
-	// See examples by uncommenting the following - also look at imgui_demo.cpp in the IMGUI filter
-	//ImGui::ShowDemoWindow();
 	
 	ImGui::Begin("GAME3001 - A2", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
@@ -211,39 +237,18 @@ void PlayScene::GUI_Function()
 		m_setGridEnabled(isGridEnabled);
 
 	}
+	ImGui::SameLine();
 
+	static bool instructionsEnabled = true;
+	if (ImGui::Checkbox("instructions Enabled", &instructionsEnabled))
+	{
+		m_setInstructionsEnabled(instructionsEnabled);
+
+	}
 
 	ImGui::Separator();
 	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
-
-	//auto radio = static_cast<int>(currentHeuristic);
-	//ImGui::LabelText("", "Heuristic Type");
-	//ImGui::RadioButton("Manhattan", &radio, static_cast<int>(MANHATTAN));
-	//ImGui::SameLine();
-	//ImGui::RadioButton("Euclidean", &radio, static_cast<int>(EUCLIDEAN));
-	//if (currentHeuristic != Heuristic(radio))
-	//{
-	//	currentHeuristic = Heuristic(radio);
-	//	m_computeTileCosts();
-	//}
-
 	ImGui::Separator();
-
-	//static int startPosition[] = { m_pSpaceShip->getGridPosition().x, m_pSpaceShip->getGridPosition().y };
-	//if (ImGui::SliderInt2("Start position", startPosition, 0, Config::COL_NUM - 1))
-	//{
-	//	if (startPosition[1] > Config::ROW_NUM - 1)
-	//	{
-	//		startPosition[1] = Config::ROW_NUM - 1;
-	//	}
-	//	SDL_RenderClear(Renderer::Instance()->getRenderer());
-	//	m_pSpaceShip->getTransform()->position = m_getTile(startPosition[0], startPosition[1])->getTransform()->position + offSet;
-	//	m_pSpaceShip->setGridPosition(startPosition[0], startPosition[1]);
-	//
-	//	SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
-	//	SDL_RenderPresent(Renderer::Instance()->getRenderer());
-	//}
-
 	static int targetPosition[] = { m_pTarget->getGridPosition().x, m_pTarget->getGridPosition().y };
 	if (ImGui::SliderInt2("Target position", targetPosition, 0, Config::COL_NUM - 1))
 	{
@@ -256,6 +261,7 @@ void PlayScene::GUI_Function()
 		m_pTarget->getTransform()->position = m_getTile(targetPosition[0], targetPosition[1])->getTransform()->position +offSet;
 		m_pTarget->setGridPosition(targetPosition[0], targetPosition[1]);
 		m_getTile(m_pTarget->getGridPosition())->setTileStatus(GOAL);
+		m_pSpaceShip->setDestination(m_pTarget->getTransform()->position);
 		m_computeTileCosts();
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
@@ -288,12 +294,7 @@ void PlayScene::GUI_Function()
 		SoundManager::Instance().load("../Assets/audio/Menu Selection Click.wav", "Menu Selection Click", SOUND_SFX);
 		SoundManager::Instance().setSoundVolume(50);
 		SoundManager::Instance().playSound("Menu Selection Click", 0, 0);
-		
-
-
-			m_findShortestPath();
-			m_moveShip();
-			
+		m_findShortestPath();
 	}
 
 	ImGui::SameLine();
@@ -319,7 +320,14 @@ void PlayScene::GUI_Function()
 			node->setTileStatus(UNVISITED);
 		}
 
-		
+		m_pClosedList.clear();
+		m_pClosedList.shrink_to_fit();
+		m_pOpenList.clear();
+		m_pOpenList.shrink_to_fit();
+		m_pPathList.clear();
+		m_pPathList.shrink_to_fit();
+		std::cout << m_pPathList.empty() << std::endl;
+		//m_shipIsMoving = false;
 
 		SoundManager::Instance().load("../Assets/audio/teleport.wav", "teleport", SOUND_SFX);
 		SoundManager::Instance().setSoundVolume(25);
@@ -416,6 +424,12 @@ void PlayScene::m_setGridEnabled(bool state)
 	{
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
 	}
+	m_GridEnabled = state;
+}
+
+bool PlayScene::m_getGridEnabled()
+{
+	return m_GridEnabled;
 }
 
 void PlayScene::m_computeTileCosts()
@@ -434,7 +448,7 @@ void PlayScene::m_computeTileCosts()
 
 void PlayScene::TotalCost()
 {
-	auto m_cost = abs(m_pSpaceShip->getGridPosition().x - m_pTarget->getGridPosition().x) + abs(m_pSpaceShip->getGridPosition().y - m_pTarget->getGridPosition().y);
+	auto m_cost = m_pPathList.size();
 	std::stringstream stream;
 
 	stream << std::fixed << std::setprecision(1) <<"Total Cost: "<< m_cost;
@@ -442,79 +456,76 @@ void PlayScene::TotalCost()
 	totalPathCostLabel->setText(cost_string);
 }
 
+
 void PlayScene::m_findShortestPath()
 {
-	m_pClosedList.clear();
-	m_pClosedList.shrink_to_fit();
-	m_pOpenList.clear();
-	m_pOpenList.shrink_to_fit();
-	m_pPathList.clear();
-	m_pPathList.shrink_to_fit();
 	//Add start position to the open list
-	auto startTile = m_getTile(m_pSpaceShip->getGridPosition());
-	startTile->setTileStatus(OPEN);
-	m_pOpenList.push_back(startTile);
-
-	bool goalFound = false;
-
-	//Loop until the open list is empty or the goal is found
-	while (!m_pOpenList.empty() && !goalFound)
+	if (m_pPathList.empty())
 	{
-		auto min = INFINITY;
-		Tile* minTile;
-		int minTileIndex = 0;
-		int count = 0;
+		auto startTile = m_getTile(m_pSpaceShip->getGridPosition());
+		startTile->setTileStatus(OPEN);
+		m_pOpenList.push_back(startTile);
 
-		std::vector<Tile*> neighbourList;
-		for (int index = 0; index < NUM_OF_NEIGHBOUR_TILES; index++)
-		{
-			neighbourList.push_back(m_pOpenList[0]->getNeighbourTile(NeighbourTile(index)));
-		}
+		bool goalFound = false;
 
-		for (auto neighbour : neighbourList)
+		//Loop until the open list is empty or the goal is found
+		while (!m_pOpenList.empty() && !goalFound)
 		{
-				std::cout << "TEST " << std::endl;
+			auto min = INFINITY;
+			Tile* minTile;
+			int minTileIndex = 0;
+			int count = 0;
+			std::vector<Tile*> neighbourList;
+			for (int index = 0; index < NUM_OF_NEIGHBOUR_TILES; index++)
+			{
+				neighbourList.push_back(m_pOpenList[0]->getNeighbourTile(NeighbourTile(index)));
+			}
+			for (auto neighbour : neighbourList)
+			{
+				//std::cout << "TEST " << std::endl;
 				if (neighbour->getTileStatus() != GOAL)
 				{
 					if (neighbour->getTileStatus() != IMPASSIBLE)
 					{
-						if (neighbour->getTileCost() < min)
-						{
-							min = neighbour->getTileCost();
-							minTile = neighbour;
-							minTileIndex = count;
-						}
-						count++;
+					if (neighbour->getTileCost() < min)
+					{
+						min = neighbour->getTileCost();
+						minTile = neighbour;
+						minTileIndex = count;
+					}
+					count++;
 					}
 				}
 				else
 				{
+
 					minTile = neighbour;
 					m_pPathList.push_back(minTile);
 					goalFound = true;
 					break;
 				}
-		}
-		//remove the reference of the current tile in the open list
-		m_pPathList.push_back(m_pOpenList[0]);
-		m_pOpenList.pop_back(); //empties the list
+			}
+			//remove the reference of the current tile in the open list
+			m_pPathList.push_back(m_pOpenList[0]);
+			m_pOpenList.pop_back(); //empties the list
 
-		//add minTile to the open list
-		m_pOpenList.push_back(minTile);
-		minTile->setTileStatus(OPEN);
-		neighbourList.erase(neighbourList.begin() + minTileIndex);
+			//add minTile to the open list
+			m_pOpenList.push_back(minTile);
+			minTile->setTileStatus(OPEN);
+			neighbourList.erase(neighbourList.begin() + minTileIndex);
 
-		//push all remaing neighbours onto the closed list
-		for (auto neighbour : neighbourList)
-		{
-			if (neighbour->getTileStatus() == UNVISITED)
+			//push all remaing neighbours onto the closed list
+			for (auto neighbour : neighbourList)
 			{
-				neighbour->setTileStatus(CLOSED);
-				m_pClosedList.push_back(neighbour);
+				if (neighbour->getTileStatus() == UNVISITED)
+				{
+					neighbour->setTileStatus(CLOSED);
+					m_pClosedList.push_back(neighbour);
+				}
 			}
 		}
+		m_displayPathList();
 	}
-	m_displayPathList();
 }
 
 void PlayScene::m_displayPathList()
@@ -528,51 +539,38 @@ void PlayScene::m_displayPathList()
 
 }
 
+void PlayScene::m_setInstructionsEnabled(bool enabled)
+{
+	InstructionsEnabled = enabled;
+}
+
+bool PlayScene::m_getInstructionsEnabled()
+{
+	return InstructionsEnabled;
+}
+
 void PlayScene::m_moveShip()
 {
-	auto offSet = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
-	for (int i = 0; i < m_pPathList.size(); i++)
+	auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	if (moveCounter < m_pPathList.size())
 	{
-		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[i]->getGridPosition().x, m_pPathList[i]->getGridPosition().y)->getTransform()->position + offSet;
+		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[moveCounter]->getGridPosition())->getTransform()->position + offset;
+		m_pSpaceShip->setGridPosition(m_pPathList[moveCounter]->getGridPosition().x, m_pPathList[moveCounter]->getGridPosition().y);
+		if (Game::Instance()->getFrames() % 10 == 0)
+		{
+			moveCounter++;
+			std::cout << "(" << m_pSpaceShip->getGridPosition().x << "," << m_pSpaceShip->getGridPosition().y << ")" << std::endl;
+		}
 	}
-
-
-
-	//auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
-	//	if (moveCounter < m_pPathList.size())
-	//	{
-
-	//		m_pSpaceShip->getTransform()->position = m_getTile(m_pPathList[moveCounter]->getGridPosition())->getTransform()->position + offset;
-	//		m_pSpaceShip->setGridPosition(m_pPathList[moveCounter]->getGridPosition().x, m_pPathList[moveCounter]->getGridPosition().y);
-	//		if (Game::Instance()->getFrames() % 20 == 0)
-	//		{
-	//			moveCounter++;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		m_shipIsMoving = false;
-	//	}
-	
-
+	else
+	{
+		m_shipIsMoving = false;
+	}
 }
 
 
 
 
-void PlayScene::m_debugView()
-{
-	m_setGridEnabled(true);//Tile borders
-	m_computeTileCosts();//Tile cost
-	m_findShortestPath();//path information ?
-
-	//Not working atm, but it should set the start tile with a right click
-	if (EventManager::Instance().getMouseButton(3))
-	{
-		m_pSpaceShip->SetLoc({ (float)EventManager::Instance().getMousePosition().x, (float)EventManager::Instance().getMousePosition().y });
-	}
-
-}
 
 Tile* PlayScene::m_getTile(int col, int row)
 {

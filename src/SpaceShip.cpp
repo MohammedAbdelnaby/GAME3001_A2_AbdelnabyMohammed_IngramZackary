@@ -31,8 +31,6 @@ void SpaceShip::draw()
 {
 	TextureManager::Instance()->draw("spaceship", 
 		getTransform()->position.x, getTransform()->position.y, m_rotationAngle, 255, true);
-
-	/*Util::DrawLine(getTransform()->position, (getTransform()->position + getOrientation() * 60.0f) );*/
 }
 
 void SpaceShip::update()
@@ -105,39 +103,21 @@ float SpaceShip::getRotation() const
 
 void SpaceShip::m_Move()
 {
-	auto deltaTime = TheGame::Instance()->getDeltaTime();
-
-	//Direction with magnitude
-	m_targetDirection = m_destination - getTransform()->position;
-
-	//normalized direction
 	m_targetDirection = Util::normalize(m_targetDirection);
-
-	auto targetRotation = Util::signedAngle(getOrientation(), m_targetDirection);
-
-	auto turnSensitivity = 5.0f;
-
-	//if (abs(targetRotation > 0.0f))
-	//{
-	//	if (targetRotation > 0.0f)
-	//	{
-	//		setRotation(getRotation() + getTurnRate());
-	//	}
-	//	else if (targetRotation < 0.0f)
-	//	{
-	//		setRotation(getRotation() - getTurnRate());
-	//	}
-	//}
-
-	//getRigidBody()->acceleration = getOrientation() * getAccelerationRate();
-
-	//getRigidBody()->velocity += getOrientation() * (deltaTime)+0.05f * getRigidBody()->acceleration * (deltaTime);
-
-	//getRigidBody()->velocity = Util::clamp(getRigidBody()->velocity, m_maxSpeed);
-
-	//getTransform()->position += getRigidBody()->velocity;
-	
-
+	auto target_rotation = Util::signedAngle(getOrientation(), m_targetDirection);
+	auto turn_sensitivity = 5.0f;
+	m_targetDirection = m_destination - getTransform()->position;
+	if (abs(target_rotation) > turn_sensitivity)
+	{
+		if (target_rotation > 0.0f)
+		{
+			setRotation(getRotation() + getTurnRate());
+		}
+		else if (target_rotation < 0.0f)
+		{
+			setRotation(getRotation() - getTurnRate());
+		}
+	}
 }
 
 glm::vec2 SpaceShip::getGridPosition() const
